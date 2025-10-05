@@ -24,21 +24,23 @@ const n_W = 9 # parameters dimension
 end
 
 function τ0(x,u,pitch,p::VTOLParams)
-    α = aoa(x, pitch)
+    α_reduced = aoa(x, pitch)
+    σ_reduced = σ_stall(α_reduced, p.α_stall, p.M_sigmoid)
+    α = aoa(x, x[3])
     σ = σ_stall(α, p.α_stall, p.M_sigmoid)
     M = Diagonal(@SVector[p.m, p.m, p.J])
 
     F_aero = 0.5*p.ρ*p.S*Va2(x)*@SVector[
         -p.CD0; # drag force in wind X
-        p.CL0*(1-σ) + σ*2*sign(α)*sin(α)^2*cos(α); # lift force in wind Z
+        p.CL0*(1-σ_reduced) + σ_reduced*2*sign(α_reduced)*sin(α_reduced)^2*cos(α_reduced); # lift force in wind Z
         ]
 
     F_prop = @SVector[
-        p.l_motor*p.max_thrust_horz*u[3]^2; # body X
-        p.l_motor*p.max_thrust_vert*(u[1]^2 + u[2]^2)  # body Z
+        p.max_thrust_horz*u[3]^2; # body X
+        p.max_thrust_vert*(u[1]^2 + u[2]^2)  # body Z
         ]
 
-    M_aero = 0.5*p.ρ*p.S*Va2(x)*(p.Cm0*(1-σ) + σ*-2*sign(α)*sin(α)^2*cos(α))
+    M_aero = 0.5*p.ρ*p.S*p.c*Va2(x)*(p.Cm0*(1-σ) + σ*-2*sign(α)*sin(α)^2*cos(α))
 
     M_prop = p.l_motor*p.max_thrust_vert*(u[1]^2 - u[2]^2)
 
@@ -46,13 +48,15 @@ function τ0(x,u,pitch,p::VTOLParams)
 end
 
 function ϕ(x,u,pitch,p::VTOLParams)
-    α = aoa(x, pitch)
+    α_reduced = aoa(x, pitch)
+    σ_reduced = σ_stall(α_reduced, p.α_stall, p.M_sigmoid)
+    α = aoa(x, x[3])
     σ = σ_stall(α, p.α_stall, p.M_sigmoid)
     M = Diagonal(@SVector[p.m, p.m, p.J])
 
-    F_aero = 0.5*p.ρ*p.S*Va2(x)*@SMatrix[[-u[4];; -α^2;; -(u[1]+u[2]);; 0;; 0];[0;; 0;; 0;; u[4];; α*(1-σ)]]
+    F_aero = 0.5*p.ρ*p.S*Va2(x)*@SMatrix[[-u[4];; -α_reduced^2;; -(u[1]+u[2]);; 0;; 0];[0;; 0;; 0;; u[4];; α_reduced*(1-σ_reduced)]]
 
-    M_aero = [0.5*p.ρ*p.S*Va2(x)*@SMatrix[u[4];; (1-σ)*α] 0.25*p.ρ*p.S^2*sqrt(Va2(x))*x[6]*p.CMq]
+    M_aero = [0.5*p.ρ*p.S*p.c*Va2(x)*@SMatrix[u[4];; (1-σ)*α] 0.25*p.ρ*p.S*p.c^2*sqrt(Va2(x))*x[6]*p.CMq]
 
     return M\[
         [R(fpa(x))*F_aero (@SMatrix zeros(2,3)) R(pitch)*@SVector[0.0; -p.max_thrust_vert*u[2]^2*u[3]^2]];
@@ -66,7 +70,9 @@ function τ_full(x,u,W,p::VTOLParams)
 end
 
 function τ_reduced(x,u,W,p::VTOLParams)
-    return τ0(x,u,u[5],p) + ϕ(x,u,u[5],p)*W
+    known = τ0(x,u,u[5],p) 
+    est = ϕ(x,u,u[5],p)*W
+    return known + est
 end
 
 
@@ -83,8 +89,10 @@ function J(t,u::AbstractVector, c::ControlAllocationParams, r::RefTrajParams)
   return quad_cost + barrier_cost + 100*(u[6]^2+u[7]^2)
 end
 
-constraint(t,x,u,W,xhat,s) = high_level_control(t,x,u,xhat,s.high_level,s.adaptation) - τ_reduced(x,u,W,s.vtol)
-
+function constraint(t,x,u,W,xhat,s) 
+  cons = high_level_control(t,x,u,xhat,s.high_level,s.adaptation) - τ_reduced(x,u,W,s.vtol)
+  return cons
+end
 
 function L(t,x::AbstractVector,u::AbstractVector,λ::AbstractVector, W::AbstractVector, xhat::AbstractVector, s)
   dual_term = dot(λ, constraint(t,x,u,W,xhat,s))
@@ -161,15 +169,15 @@ function uλW_dot(t,x,u,λ,W,xhat, xhatdot, s)
     end
 
     uλdot = @SVector zeros(n_u+n_λ)
-    try
-        uλdot = -H_uλ\(Γ_uλ*dLduλ + uff)
-    catch e
-        println("H_uλ is singular at t = ", t)
-        println("x = ", x)
-        println("u = ", u)
-        println("λ = ", λ)
-        println("W = ", W)
-    end
+    # try
+    uλdot = -H_uλ\(s.control_alloc.Γ_uλ*dLduλ + uff)
+    # catch e
+    #     println("H_uλ is singular at t = ", t)
+    #     println("x = ", x)
+    #     println("u = ", u)
+    #     println("λ = ", λ)
+    #     println("W = ", W)
+    # end
 
     return vcat(uλdot,Wdot)
 

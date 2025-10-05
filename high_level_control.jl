@@ -18,7 +18,7 @@ end
 
 @kwdef struct HighLevelParams
     kp::Float64 = 0.5
-    kd::Float64 = 2*sqrt(2)*kp
+    kd::Float64 = 2*sqrt(2*kp)
     ϵ::Float64 = 0.2
     ref_traj::RefTrajParams = RefTrajParams()
 end
@@ -55,7 +55,9 @@ function high_level_control(t,x,u,xhat, h::HighLevelParams, a::AdaptationParams)
     d_err = xhat[4:6] - [ref_velocity(t,h.ref_traj)[SOneTo(2)];0.0]
     command = -Kp*p_err - Kd*d_err + [ref_accel(t,h.ref_traj)[SOneTo(2)];0.0]
     command += -a.K_sp*(x[SOneTo(3)] - xhat[SOneTo(3)]) - a.K_sv*(x[4:6] - xhat[4:6])
-    return clamp.(command, @SVector[-2,-100,-500], @SVector[5,100,500]) + @SVector[u[6];u[7];0]
+    cmd = clamp.(command, @SVector[-2,-100,-500], @SVector[5,100,500]) + @SVector[u[6];u[7];0]
+
+    return cmd
 end
 
 end

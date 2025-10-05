@@ -3,8 +3,8 @@ using StaticArrays
 const g = 9.81 # gravity [m/s^2]
 
 @kwdef struct VTOLParams
-    m::Float64 = 1.0 # mass [kg]
-    J::Float64 = 0.1 # moment of inertia [kg*m^2]
+    m::Float64 = 10.0 # mass [kg]
+    J::Float64 = 1.0 # moment of inertia [kg*m^2]
     l_motor::Float64 = 0.5 # distance between center and thrusters [m]
     max_thrust_vert::Float64 = 100.0 # max thrust [N]
     max_thrust_horz::Float64 = 50.0 # max torque [N*m]
@@ -21,9 +21,6 @@ const g = 9.81 # gravity [m/s^2]
     CL0::Float64 = 0.23
     CLα::Float64 = 5.61
     CLδ::Float64 = 0.13
-    CM0::Float64 = 0.0135
-    CMα::Float64 = -2.74
-    CMδ::Float64 = -0.99
     CLq::Float64 = 7.95
     CMq::Float64 = -38.21
 
@@ -60,7 +57,7 @@ function F_aero_sim(u,x,p::VTOLParams)
     V2 = Va2(x)
     σ = σ_stall(α, p.α_stall, p.M_sigmoid)
 
-    return 0.5*p.ρ*p.S*V2^2*[
+    return 0.5*p.ρ*p.S*V2*[
                         -(p.CDδ*u[4] + p.CDα*α^2 + p.CD0 + p.CDt*(u[1] + u[2])); # drag force in wind X
                         p.CLδ*u[4] + (p.CLα*α + p.CL0)*(1-σ) + σ*2*sign(α)*sin(α)^2*cos(α); # lift force in wind Z
                         ] + [0.0; 0.25*p.ρ*p.S*p.c*sqrt(V2)*p.CLq*x[6]]

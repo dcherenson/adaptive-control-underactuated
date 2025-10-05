@@ -51,7 +51,7 @@ function adaptive_control_allocator!(integrator)
     W += uλWdot[n_u+n_λ+1:n_u+n_λ+n_W]*dt
     xhat += xhatdot*dt
 
-    u = clamp.(integrator.p.u, 0.001.+@MVector[0.0, 0.0, 0.0, integrator.p.params.control_alloc.elev_limits[1], integrator.p.params.control_alloc.pitch_cmd_limits[1], -Inf, -Inf],
+    u = clamp.(u, 0.001.+@MVector[0.0, 0.0, 0.0, integrator.p.params.control_alloc.elev_limits[1], integrator.p.params.control_alloc.pitch_cmd_limits[1], -Inf, -Inf],
          -0.001.+@MVector[1.0, 1.0, 1.0, integrator.p.params.control_alloc.elev_limits[2], integrator.p.params.control_alloc.pitch_cmd_limits[2], Inf, Inf])
     
     integrator.p.u[:] = u
