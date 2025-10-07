@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+*.so
+
+# Julia compiled files
+*.ji
+
+# Package files
+*.tar.gz
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Julia package manager
+Manifest.toml
+deps/deps.jl
+deps/build.log
+deps/downloads/
+deps/usr/
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Local environment
+.env

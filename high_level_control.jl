@@ -11,8 +11,8 @@ import Main.Adaptation: AdaptationParams
     h_ref_0::Float64 = 100.0
     a_ref::Float64 = -1.0
     descent_rate::Float64 = -0.75
-    W_ref_0::Float64 = 0.0
-    W_ref_final::Float64 = deg2rad(15.0)
+    θ_ref_0::Float64 = 0.0
+    θ_ref_final::Float64 = deg2rad(15.0)
 end
 
 
@@ -39,7 +39,7 @@ function ref_pose(t, params::RefTrajParams)
     return @SVector[
        (1-s1)*r1 + s1*((1-s2)*r2 + s2*r3);
        (1-s1)*params.h_ref_0 + s1*(params.h_ref_0+params.descent_rate*(t-params.t_start_land));
-       (1-s2)*deg2rad(params.W_ref_0) + s2*deg2rad(params.W_ref_final)
+       (1-s2)*params.θ_ref_0 + s2*params.θ_ref_final
     ]
 end
 
@@ -55,8 +55,7 @@ function high_level_control(t,x,u,xhat, h::HighLevelParams, a::AdaptationParams)
     d_err = xhat[4:6] - [ref_velocity(t,h.ref_traj)[SOneTo(2)];0.0]
     command = -Kp*p_err - Kd*d_err + [ref_accel(t,h.ref_traj)[SOneTo(2)];0.0]
     command += -a.K_sp*(x[SOneTo(3)] - xhat[SOneTo(3)]) - a.K_sv*(x[4:6] - xhat[4:6])
-    cmd = clamp.(command, @SVector[-2,-100,-500], @SVector[5,100,500]) + @SVector[u[6];u[7];0]
-
+    cmd = clamp.(command, @SVector[-2,-100,-500], @SVector[5,100,500])
     return cmd
 end
 

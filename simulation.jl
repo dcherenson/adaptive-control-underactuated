@@ -45,14 +45,14 @@ function adaptive_control_allocator!(integrator)
     uλWdot = uλW_dot(t,x,u, λ, W,xhat,xhatdot,integrator.p.params)
 
     udot = uλWdot[1:n_u]
-    udot = clamp.(udot, @MVector[-5.0, -5.0, -2.0, -2π, -deg2rad(60.0), -Inf, -Inf], @MVector[5.0, 5.0, 1.0, 2π, deg2rad(60.0), Inf, Inf])
+    udot = clamp.(udot, @MVector[-5.0, -5.0, -2.0, -2π, -deg2rad(60.0)], @MVector[5.0, 5.0, 1.0, 2π, deg2rad(60.0)])
     u += udot*dt
     λ += uλWdot[n_u+1:n_u+n_λ]*dt
     W += uλWdot[n_u+n_λ+1:n_u+n_λ+n_W]*dt
     xhat += xhatdot*dt
 
-    u = clamp.(u, 0.001.+@MVector[0.0, 0.0, 0.0, integrator.p.params.control_alloc.elev_limits[1], integrator.p.params.control_alloc.pitch_cmd_limits[1], -Inf, -Inf],
-         -0.001.+@MVector[1.0, 1.0, 1.0, integrator.p.params.control_alloc.elev_limits[2], integrator.p.params.control_alloc.pitch_cmd_limits[2], Inf, Inf])
+    u = clamp.(u, 0.001.+@MVector[0.0, 0.0, 0.0, integrator.p.params.control_alloc.elev_limits[1], integrator.p.params.control_alloc.pitch_cmd_limits[1]],
+         -0.001.+@MVector[1.0, 1.0, 1.0, integrator.p.params.control_alloc.elev_limits[2], integrator.p.params.control_alloc.pitch_cmd_limits[2]])
     
     integrator.p.u[:] = u
     integrator.p.λ[:] = λ

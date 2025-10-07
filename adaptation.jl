@@ -1,6 +1,6 @@
 
 module Adaptation
-using LinearAlgebra
+using LinearAlgebra, StaticArrays
 import Main.VTOL: VTOLParams
 
 @kwdef struct AdaptationParams
@@ -12,11 +12,11 @@ import Main.VTOL: VTOLParams
 end
 
 function xhat_dot(xhat, x, u, W, p::AdaptationParams, v::VTOLParams)
-    return vcat(xhat[4:6], Main.ControlAllocation.τ_full(x,u,W,v) + p.K_sp*(x[1:3] - xhat[1:3]) + p.K_sv*(x[4:6] - xhat[4:6]))
+    return [SVector(xhat[SA[4:6...]]); Main.ControlAllocation.τ_full(x,u,W,v) + p.K_sp*(x[SOneTo(3)] - xhat[SOneTo(3)]) + p.K_sv*(x[SA[4:6...]] - xhat[SA[4:6...]])]
 end
 
 function W_dot(x,u,W,d2Ldxdudλ, dLduλ, xhat, p::AdaptationParams, v::VTOLParams)
-    e_s = (x - xhat)[4:6]
+    e_s = (x - xhat)[SA[4:6...]]
 
     Wdot = p.Γ_W_inv*Main.ControlAllocation.ϕ(x,u,x[3],v)'*(p.Γ_e*e_s + d2Ldxdudλ'*dLduλ)
 
