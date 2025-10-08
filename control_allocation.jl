@@ -8,7 +8,6 @@ import Main.Adaptation: AdaptationParams, W_dot
 
 const n_x = 6 # state dimension
 const n_u = 5 # augmented control input + 2 slack variables dimension
-const n_s = 0
 const n_λ = 3 # lagrange multiplier dimension
 const n_W = 9 # parameters dimension
 
@@ -18,7 +17,7 @@ const n_W = 9 # parameters dimension
     elev_limits::Tuple{Float64, Float64} = (-deg2rad(35.0), deg2rad(35.0)) # elevator angle limits
     pitch_cmd_limits::Tuple{Float64, Float64} = (-deg2rad(20.0), deg2rad(20.0)) # pitch command limits
     log_scalar::Float64 = 0.01
-    opti_weights::SVector{n_u-n_s,Float64} = @SVector[10.0, 10.0, 1.0, 0.1, 50.0]
+    opti_weights::SVector{n_u,Float64} = @SVector[10.0, 10.0, 1.0, 0.1, 50.0]
     Γ_uλ::Float64 = 50.0
 
 end
@@ -123,16 +122,6 @@ end
 function dL_du(t,x::AbstractVector,u::AbstractVector,λ::AbstractVector, W::AbstractVector, xhat::AbstractVector, s)
   ForwardDiff.gradient(u -> L(t,x,u, λ, W, xhat, s), u)
 end
-
-# function L_flat(v, s)
-#   x = v[SA[1:n_x...]]
-#   u = v[SA[n_x+1 : n_x+n_u...]]
-#   λ = v[SA[n_x+n_u+1 : n_x+n_u+n_λ...]]
-#   W = v[SA[n_x+n_u+n_λ+1 : n_x+n_u+n_λ+n_W...]]
-#   xhat = v[SA[n_x+n_u+n_λ+n_W+1 : n_x+n_u+n_λ+n_W+n_x...]]
-#   t = v[end]
-#   return L(t, x, u, λ, W, xhat, s)
-# end
 
 function xdot(x,u,W,p::VTOLParams)
     return vcat(x[4:6], τ_full(x,u,W,p))
