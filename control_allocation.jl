@@ -2,7 +2,7 @@ module ControlAllocation
 import NaNMath
 using StaticArrays, ForwardDiff, LinearAlgebra
 import Main.VTOL: VTOLParams, σ_stall, aoa, Va2, fpa, R, g
-import Main.HighLevelController: HighLevelParams, high_level_control, RefTrajParams, ref_pose
+import Main.HighLevelController: HighLevelParams, AbstractRefTrajParams, high_level_control, ref_pose
 import Main.Adaptation: AdaptationParams, W_dot
 
 
@@ -74,7 +74,7 @@ function τ_reduced(x,u,W,p::VTOLParams)
 end
 
 
-function J(t,u::AbstractVector, c::ControlAllocationParams, r::RefTrajParams)
+function J(t,u::AbstractVector, c::ControlAllocationParams, r::AbstractRefTrajParams)
   u_diff = u[SOneTo(5)] - @SVector[0.0; 0.0; 0.0; 0.0; ref_pose(t,r)[3]] # penalize deviation from reference angle
   quad_cost =  0.5*u_diff'*(c.opti_weights.*u_diff)                     # ½‖u‖²
   barrier_cost = -c.log_scalar*(
