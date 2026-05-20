@@ -63,7 +63,7 @@ function F_aero_sim(u,x,p::VTOLParams)
                         ] + [0.0; 0.25*p.ρ*p.S*p.c*sqrt(V2)*p.CLq*x[6]]
 end
 
-rear_prop_degradation(x,u) = u[3]^2*(1.0 - 0.5)*(1.0 + sqrt(Va2(x))/80.0)
+rear_prop_degradation(x,u) = 0.5*u[3]^2*(1.0 + sqrt(Va2(x))/80.0)
 
 M_prop_sim(x,u,p::VTOLParams) = p.l_motor*p.max_thrust_vert*(u[1]^2-u[2]^2*(1-rear_prop_degradation(x,u)))
 

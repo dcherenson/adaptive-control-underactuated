@@ -2,7 +2,7 @@ module Simulation
 using StaticArrays
 import Main.VTOL: VTOLParams, angle_normalize, dynamics_sim, g, R, Va2
 import Main.ControlAllocation: ControlAllocationParams, uλW_dot, n_u, n_λ, n_W, n_x
-import Main.HighLevelController: HighLevelParams, LandingTrajParams, TakeoffTrajParams, SinusoidalTransitionTrajParams, high_level_control, ref_pose
+import Main.HighLevelController: HighLevelParams, LandingTrajParams, TakeoffTrajParams, SinusoidalTransitionTrajParams, HoverTrajParams, high_level_control, ref_pose
 import Main.Adaptation: AdaptationParams, xhat_dot
 
 @kwdef struct PIDGains
@@ -25,7 +25,7 @@ end
     moment_to_elevator_gain::Float64 = -0.014645461382071314
     fw_ref_pitch_weight::Float64 = 0.40
     fw_accel_to_pitch_gain::Float64 = -0.12
-    ax_to_elevator_gain::Float64 = -0.02
+    ax_to_elevator_gain::Float64 = 0.0
     u_rate_limits::SVector{n_u,Float64} = @SVector[2.0, 2.0, 2.0, 4.0, 4.0]
     throttle_sum_limit::Float64 = 1.95
 end
@@ -48,6 +48,8 @@ function scenario_ref_traj(scenario::Symbol)
         return TakeoffTrajParams()
     elseif scenario == :sinusoidal_transition
         return SinusoidalTransitionTrajParams()
+    elseif scenario == :hover
+        return HoverTrajParams()
     else
         throw(ArgumentError("Unknown scenario '$scenario'. Use :landing, :takeoff, or :sinusoidal_transition."))
     end
@@ -66,10 +68,10 @@ end
     q_int::F = 0.0
     prev_q_err::F = 0.0
     params::SimulationParams = SimulationParams()
-    u_hist::Vector{MVector{n_u,F}} = [u]
-    λ_hist::Vector{MVector{n_λ,F}} = [λ]
-    W_hist::Vector{MVector{n_W,F}} = [W]
-    xhat_hist::Vector{MVector{n_x,F}} = [xhat]
+    u_hist::Vector{MVector{n_u,F}} = [copy(u)]
+    λ_hist::Vector{MVector{n_λ,F}} = [copy(λ)]
+    W_hist::Vector{MVector{n_W,F}} = [copy(W)]
+    xhat_hist::Vector{MVector{n_x,F}} = [copy(xhat)]
     t_hist::Vector{F} = [params.t0]
 end
 
@@ -104,10 +106,10 @@ function adaptive_control_allocator!(integrator)
     integrator.p.W[:] = W
     integrator.p.xhat[:] = xhat    
     
-    push!(integrator.p.u_hist, u)
-    push!(integrator.p.λ_hist, λ)
-    push!(integrator.p.W_hist, W)
-    push!(integrator.p.xhat_hist, xhat)
+    push!(integrator.p.u_hist, copy(integrator.p.u))
+    push!(integrator.p.λ_hist, copy(integrator.p.λ))
+    push!(integrator.p.W_hist, copy(integrator.p.W))
+    push!(integrator.p.xhat_hist, copy(integrator.p.xhat))
     push!(integrator.p.t_hist, t+dt)
 
 end
@@ -135,7 +137,9 @@ function pid_inner_loop_target(t, x, u, cmd, params::SimulationParams, data)
 
     # Blended reference pitch: tilt-to-accelerate for hover, trajectory pitch for fixed-wing.
     β = fw_blend_factor(x, pid)
-    θ_hover = atan(cmd[1], cmd[2] + g)
+    # Positive pitch rotates vertical thrust toward negative inertial x,
+    # so hover lateral acceleration requires opposite-sign pitch command.
+    θ_hover = atan(-cmd[1], cmd[2] + g)
     θ_ref = ref_pose(t, params.high_level.ref_traj)[3]
     θ_fw = pid.fw_ref_pitch_weight*θ_ref + (1 - pid.fw_ref_pitch_weight)*θ_hover + pid.fw_accel_to_pitch_gain*cmd[1]
     θ_cmd = (1 - β)*θ_hover + β*θ_fw
@@ -197,10 +201,10 @@ function cascaded_pid_allocator!(integrator)
         -0.001 .+ @MVector[1.0, 1.0, 1.0, p.params.control_alloc.elev_limits[2], p.params.control_alloc.pitch_cmd_limits[2]],
     )
 
-    push!(p.u_hist, p.u)
-    push!(p.λ_hist, p.λ)
-    push!(p.W_hist, p.W)
-    push!(p.xhat_hist, p.xhat)
+    push!(p.u_hist, copy(p.u))
+    push!(p.λ_hist, copy(p.λ))
+    push!(p.W_hist, copy(p.W))
+    push!(p.xhat_hist, copy(p.xhat))
     push!(p.t_hist, t + dt)
 end
 

@@ -6,6 +6,11 @@ import Main.Adaptation: AdaptationParams
 
 abstract type AbstractRefTrajParams end
 
+@kwdef struct HoverTrajParams <: AbstractRefTrajParams
+    h_ref_0::Float64 = 100.0
+    θ_ref_0::Float64 = deg2rad(3.0)
+end
+
 @kwdef struct LandingTrajParams <: AbstractRefTrajParams
     t_start_land::Float64 = 3.0
     v_ref_0::Float64 = 20.0
@@ -17,14 +22,14 @@ abstract type AbstractRefTrajParams end
 end
 
 @kwdef struct TakeoffTrajParams <: AbstractRefTrajParams
-    t_start_takeoff::Float64 = 30.0
+    t_start_takeoff::Float64 = 1.0
     v_ref_0::Float64 = 0.0
     v_ref_final::Float64 = 20.0
-    h_ref_0::Float64 = 0.0
+    h_ref_0::Float64 = 100.0
     a_ref::Float64 = 1.0
-    climb_rate::Float64 = 0.75
-    θ_ref_0::Float64 = deg2rad(0.0)
-    θ_ref_final::Float64 = deg2rad(5.0)
+    climb_rate::Float64 = 0.0
+    θ_ref_0::Float64 = deg2rad(1.0)
+    θ_ref_final::Float64 = deg2rad(0.0)
 end
 
 @kwdef struct SinusoidalTransitionTrajParams <: AbstractRefTrajParams
@@ -55,6 +60,14 @@ const RefTrajParams = LandingTrajParams
 end
 
 σ(t,t_0) = 0.5*(1.0 + tanh((t-t_0)))
+
+function ref_pose(t, params::HoverTrajParams)
+    return @SVector[
+        0.0;
+        params.h_ref_0;
+        params.θ_ref_0
+    ]
+end
 
 function ref_pose(t, params::LandingTrajParams)
     T_transition = -params.v_ref_0 / params.a_ref    
