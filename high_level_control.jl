@@ -26,10 +26,10 @@ end
     v_ref_0::Float64 = 0.0
     v_ref_final::Float64 = 20.0
     h_ref_0::Float64 = 100.0
-    a_ref::Float64 = 1.0
+    a_ref::Float64 = 0.75
     climb_rate::Float64 = 0.0
     θ_ref_0::Float64 = deg2rad(1.0)
-    θ_ref_final::Float64 = deg2rad(0.0)
+    θ_ref_final::Float64 = deg2rad(4.0)
 end
 
 @kwdef struct SinusoidalTransitionTrajParams <: AbstractRefTrajParams

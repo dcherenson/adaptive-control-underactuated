@@ -5,9 +5,9 @@ const g = 9.81 # gravity [m/s^2]
 @kwdef struct VTOLParams
     m::Float64 = 10.0 # mass [kg]
     J::Float64 = 1.0 # moment of inertia [kg*m^2]
-    l_motor::Float64 = 0.5 # distance between center and thrusters [m]
+    l_motor::Float64 = 0.5 # distance between center and vert propellers [m]
     max_thrust_vert::Float64 = 100.0 # max thrust [N]
-    max_thrust_horz::Float64 = 50.0 # max torque [N*m]
+    max_thrust_horz::Float64 = 50.0 # max thrust [N]
     ρ::Float64 = 1.225
     S::Float64 = 0.5
     c::Float64 = 0.2
