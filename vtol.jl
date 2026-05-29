@@ -5,9 +5,9 @@ const g = 9.81 # gravity [m/s^2]
 @kwdef struct VTOLParams
     m::Float64 = 10.0 # mass [kg]
     J::Float64 = 1.0 # moment of inertia [kg*m^2]
-    l_motor::Float64 = 0.5 # distance between center and thrusters [m]
+    l_motor::Float64 = 0.5 # distance between center and vert propellers [m]
     max_thrust_vert::Float64 = 100.0 # max thrust [N]
-    max_thrust_horz::Float64 = 50.0 # max torque [N*m]
+    max_thrust_horz::Float64 = 50.0 # max thrust [N]
     ρ::Float64 = 1.225
     S::Float64 = 0.5
     c::Float64 = 0.2
@@ -63,7 +63,7 @@ function F_aero_sim(u,x,p::VTOLParams)
                         ] + [0.0; 0.25*p.ρ*p.S*p.c*sqrt(V2)*p.CLq*x[6]]
 end
 
-rear_prop_degradation(x,u) = u[3]^2*(1.0 - 0.5)*(1.0 + sqrt(Va2(x))/80.0)
+rear_prop_degradation(x,u) = 0.5*u[3]^2*(1.0 + sqrt(Va2(x))/80.0)
 
 M_prop_sim(x,u,p::VTOLParams) = p.l_motor*p.max_thrust_vert*(u[1]^2-u[2]^2*(1-rear_prop_degradation(x,u)))
 
