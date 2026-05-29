@@ -37,99 +37,37 @@ Let $p = [x,z]^\top$, $v = [\dot{x},\dot{z}]^\top$, $V = \lVert v\rVert$, $\gamm
 
 Define the body-axis propulsive force components and wind-axis aerodynamic force components as
 
-$$
-F_p = T_{\max,p}u_p^2,\qquad
-F_v = T_{\max,v}\left(u_f^2 + C_{pr}(V,u_p)u_r^2\right),
-$$
+$$ F_p = T_{\max,p}u_p^2,\qquad F_v = T_{\max,v}\left(u_f^2 + C_{pr}(V,u_p)u_r^2\right). $$
 
-$$
-D = \frac{1}{2}\rho S V^2 C_D,
-$$
+$$ D = \frac{1}{2}\rho S V^2 C_D. $$
 
-$$
-L = \frac{1}{2}\rho S V^2 C_L
-+ \frac{1}{4}\rho S\bar{c}V C_{L_\omega}\omega .
-$$
+$$ L = \frac{1}{2}\rho S V^2 C_L + \frac{1}{4}\rho S\bar{c}V C_{L_\omega}\omega. $$
 
 The full nonlinear translational dynamics are
 
-$$
-\ddot{x}
-= \frac{1}{m}
-\left[
-F_p\cos\theta
-- F_v\sin\theta
-- D\cos\gamma
-- L\sin\gamma
-\right],
-$$
+$$ \ddot{x} = \frac{1}{m}\left(F_p\cos\theta - F_v\sin\theta - D\cos\gamma - L\sin\gamma\right). $$
 
-$$
-\ddot{z}
-= \frac{1}{m}
-\left[
-F_p\sin\theta
-+ F_v\cos\theta
-- D\sin\gamma
-+ L\cos\gamma
-\right] - g_z .
-$$
+$$ \ddot{z} = \frac{1}{m}\left(F_p\sin\theta + F_v\cos\theta - D\sin\gamma + L\cos\gamma\right) - g_z. $$
 
 The full nonlinear pitch dynamics are
 
-$$
-\ddot{\theta}
-= \frac{1}{J}
-\left[
-\frac{1}{2}\rho S\bar{c}V^2 C_M
-+ \frac{1}{4}\rho S\bar{c}^2 V C_{M_\omega}\omega
-+ l_vT_{\max,v}\left(u_f^2 - C_{pr}(V,u_p)u_r^2\right)
-\right].
-$$
+$$ \ddot{\theta} = \frac{1}{J}\left(\frac{1}{2}\rho S\bar{c}V^2 C_M + \frac{1}{4}\rho S\bar{c}^2 V C_{M_\omega}\omega + l_vT_{\max,v}\left(u_f^2 - C_{pr}(V,u_p)u_r^2\right)\right). $$
 
 The aerodynamic coefficients are
 
-$$
-C_D
-= C_{D_0}
-+ C_{D_\alpha}\alpha^2
-+ C_{D_e}u_e
-+ C_{D_t}(u_f+u_r),
-$$
+$$ C_D = C_{D_0} + C_{D_\alpha}\alpha^2 + C_{D_e}u_e + C_{D_t}(u_f+u_r). $$
 
-$$
-C_L
-= C_{L_e}u_e
-+ (1-\sigma(\alpha))(C_{L_0}+C_{L_\alpha}\alpha)
-+ \sigma(\alpha)2\,\operatorname{sgn}(\alpha)\sin^2(\alpha)\cos(\alpha),
-$$
+$$ C_L = C_{L_e}u_e + (1-\sigma(\alpha))(C_{L_0}+C_{L_\alpha}\alpha) + \sigma(\alpha)2\,\operatorname{sgn}(\alpha)\sin^2(\alpha)\cos(\alpha). $$
 
-$$
-C_M
-= C_{M_e}u_e
-+ (1-\sigma(\alpha))(C_{M_0}+C_{M_\alpha}\alpha)
-- \sigma(\alpha)2\,\operatorname{sgn}(\alpha)\sin^2(\alpha)\cos(\alpha).
-$$
+$$ C_M = C_{M_e}u_e + (1-\sigma(\alpha))(C_{M_0}+C_{M_\alpha}\alpha) - \sigma(\alpha)2\,\operatorname{sgn}(\alpha)\sin^2(\alpha)\cos(\alpha). $$
 
 The stall blending function is
 
-$$
-\sigma(\alpha)
-=
-\frac{
-1 + e^{-M(\alpha-\alpha_{\rm stall})} + e^{M(\alpha+\alpha_{\rm stall})}
-}{
-\left(1 + e^{-M(\alpha-\alpha_{\rm stall})}\right)
-\left(1 + e^{M(\alpha+\alpha_{\rm stall})}\right)
-}.
-$$
+$$ \sigma(\alpha) = \frac{1 + e^{-M(\alpha-\alpha_{\rm stall})} + e^{M(\alpha+\alpha_{\rm stall})}}{\left(1 + e^{-M(\alpha-\alpha_{\rm stall})}\right)\left(1 + e^{M(\alpha+\alpha_{\rm stall})}\right)}. $$
 
 The rear propeller effectiveness is
 
-$$
-C_{pr}(V,u_p)
-= 1 - \kappa_{pr}u_p^2\left(1+\frac{V}{V_{pr}}\right).
-$$
+$$ C_{pr}(V,u_p) = 1 - \kappa_{pr}u_p^2\left(1+\frac{V}{V_{pr}}\right). $$
 
 ## Model Parameters
 
