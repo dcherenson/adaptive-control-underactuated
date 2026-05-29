@@ -33,10 +33,10 @@ end
 end
 
 @kwdef struct SinusoidalTransitionTrajParams <: AbstractRefTrajParams
-    t_start::Float64 = 3.0
-    v_ref_0::Float64 = 12.0
+    t_start::Float64 = 1.0
+    v_ref_0::Float64 = 20.0
     h_ref_0::Float64 = 40.0
-    a_ref::Float64 = 0.4
+    a_ref::Float64 = -1.0
     transition_duration::Float64 = 10.0
     h_rate::Float64 = 0.0
     θ_ref_0::Float64 = deg2rad(5.0)
